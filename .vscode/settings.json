@@ -1,6 +1,6 @@
 {
-    "cmake.buildDirectory": "${workspaceFolder}/build/OS_Expert_11",
-    "cmake.sourceDirectory": "${workspaceFolder}/src/OS_Expert_11",
+    "cmake.buildDirectory": "${workspaceFolder}/build/group_name",
+    "cmake.sourceDirectory": "${workspaceFolder}/src/group_name",
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
         "cstddef": "cpp",
