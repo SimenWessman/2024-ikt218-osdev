@@ -1,4 +1,4 @@
-# Install script for directory: /workspaces/2024-ikt218-osdev/src/OS_Expert_11
+# Install script for directory: /workspaces/2024-ikt218-osdev/src/11_OS_Expert
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/workspaces/2024-ikt218-osdev/build/OS_Expert_11/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/workspaces/2024-ikt218-osdev/build/11_OS_Expert/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
