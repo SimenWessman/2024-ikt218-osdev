@@ -17,20 +17,25 @@ void reverse(char s[])
     }
 }
 
-void itoa(int n, char s[], int base) 
-{
-    int i, sign;
+void itoa(int value, char* str, int base) {
+    static char num[] = "0123456789ABCDEF"; // Support for hexadecimal
+    char* wstr = str;
+    int sign;
+    if (base < 2 || base > 16) return; // Check supported base range
 
-    if ((sign = n) < 0) // record sign
-        n = -n;         // make n positive
-    i = 0;
-    do {       // generate digits in reverse order
-        s[i++] = n % base + '0';   // get next digit
-    } while ((n /= base) > 0);     // delete it
-    if (sign < 0)
-        s[i++] = '-';
-    s[i] = '\0';
-    reverse(s);
+    // Handle negative numbers only for base 10
+    if ((sign = value) < 0 && base == 10) value = -value;
+
+    // Conversion in reverse order
+    do {
+        *wstr++ = num[value % base];
+    } while (value /= base);
+
+    if (sign < 0 && base == 10) *wstr++ = '-';
+    *wstr = '\0';
+
+    // Reverse string
+    reverse(str);
 }
 
 // Sends a byte (val) to the hardware port (port).
@@ -112,39 +117,55 @@ int puts( const char *str)
     return 0;
 }
 
-int printf(const char* format, ...) 
-{
-   va_list args;
-   va_start(args, format);
+int printf(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
 
-   int count = 0;
-   while (*format != '\0') {
-       if (*format == '%') {
-           format++;
-           if (*format == 'd') {
-               int num = va_arg(args, int);
-               char buffer[32];
-               itoa(num, buffer, 10);
-               puts(buffer);
-               count += strlen(buffer);
-           } else if (*format == 's') {
-               char* str = va_arg(args, char*);
-               puts(str);
-               count += strlen(str);
-           } else if (*format == 'c') {
-               char c = va_arg(args, int);
-               putchar(c);
-               count++;
-           }
-       } else {
-           putchar(*format);
-           count++;
-       }
-       format++;
-   }
+    int count = 0;
+    while (*format != '\0') {
+        if (*format == '%') {
+            format++; // Skip '%'
+            switch (*format) {
+                case 'd': {
+                    int num = va_arg(args, int);
+                    char buffer[32];
+                    itoa(num, buffer, 10); // Decimal
+                    puts(buffer);
+                    count += strlen(buffer);
+                    break;
+                }
+                case 'X': {
+                    int num = va_arg(args, int);
+                    char buffer[32];
+                    itoa(num, buffer, 16); // Hexadecimal
+                    puts(buffer);
+                    count += strlen(buffer);
+                    break;
+                }
+                case 's': {
+                    char* str = va_arg(args, char*);
+                    puts(str);
+                    count += strlen(str);
+                    break;
+                }
+                case 'c': {
+                    char c = (char)va_arg(args, int); // Char are promoted to int
+                    putchar(c);
+                    count++;
+                    break;
+                }
+                default:
+                    putchar('%'); // In case of %% or unknown format specifier
+                    putchar(*format);
+                    count += 2;
+            }
+        } else {
+            putchar(*format);
+            count++;
+        }
+        format++;
+    }
 
-   va_end(args);
-   return count;
-    
-    return 0;
+    va_end(args);
+    return count;
 }

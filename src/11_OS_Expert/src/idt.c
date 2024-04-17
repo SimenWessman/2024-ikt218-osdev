@@ -1,4 +1,6 @@
 #include "idt.h"
+#include "keyboard.h"
+#include "libc/stdio.h"
 
 // Defining the IDT entry structure
 struct idt_entry idt_entries[256];
@@ -16,6 +18,13 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
     idt_entries[num].flags = flags;
 }
 
+void print_idt_entry(uint8_t num) 
+{
+    struct idt_entry e = idt_entries[num];
+    printf("IDT Entry %d: base_lo=%X, base_hi=%X, sel=%X, flags=%X\n",
+        num, e.base_lo, e.base_hi, e.sel, e.flags);
+}
+
 // Initialize the IDT
 void init_idt() {
     idtp.limit = sizeof(struct idt_entry) * 256 - 1;
@@ -23,10 +32,12 @@ void init_idt() {
 
     memset(&idt_entries, 0, sizeof(struct idt_entry) * 256);
     
-
     // TODO: Add specific gates:
-    idt_set_gate(33, (uint32_t)keyboard_handler, 0x08, 0x8E);
+    idt_set_gate(0x21, (uint32_t)keyboard_handler, 0x08, 0x8E);
 
     // Load the IDT
     __asm__ __volatile__("lidt (%0)" : : "r" (&idtp));
+    __asm__ __volatile__("sti");
+
+    //print_idt_entry(0x21);
 }

@@ -36,9 +36,8 @@ _start:
 
 	push ebx
 	push eax
-
+    
     call main ; Jump main function
-    hlt
 
 section .bss
 stack_bottom:

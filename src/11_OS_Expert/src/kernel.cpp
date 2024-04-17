@@ -11,20 +11,34 @@
 // TODO: Add writing functionality to the kernel
 // TODO: Add cursor movement functionality to the kernel
 
-// Extern C to avoid name mangling
-extern "C" int kernel_main();
-extern "C" int putchar(char c);
-extern "C" int puts(const char *s);
-extern "C" int printf(const char *format, ...);
-extern "C" void init_gdt();
-//extern "C" void init_idt();
+extern "C"{
+    #include "libc/stdint.h"
+    #include "libc/stddef.h"
+    #include "libc/stdbool.h"
+    #include "libc/stdio.h"
+    #include "keyboard.h"
+    #include "idt.h"
+    #include "gdt.h"
+    #include "pic.h"
+
+    int kernel_main(void);
+}
 
 int kernel_main() 
 {
     // Initialize the GDT.
     init_gdt();
+    
+    // Initialize the PIC.
+    init_pic();
+
+    // Unmask IRQ1.
+    unmask_irq1();
+
     // Initialize the IDT.
-    //init_idt();
+    init_idt();
+
+    enable_keyboard_interrupt();
 
     // Have some fun with these commands:
     // write_string( (2 << 2) | 13, "Hello");
@@ -34,6 +48,10 @@ int kernel_main()
     // Write a string to the screen
     printf("Hello World!\n%d", 10);
 
+    while (1) 
+    {
+    __asm__("hlt");
+    }
 
     return 0;
 }
