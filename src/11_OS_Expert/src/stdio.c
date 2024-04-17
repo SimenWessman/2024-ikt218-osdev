@@ -68,18 +68,38 @@ void update_cursor(int row, int col)
 
 int putchar(char c) 
 {
-   static unsigned short *video_memory = (unsigned short *)0xB8000;
+    static unsigned short *video_memory = (unsigned short *)0xB8000;
     static int cursorX = 0, cursorY = 0;
-    const int maxRows = 25, maxCols = 80;
-    unsigned char attributeByte = (0 /*background color*/ << 4) | (13 /*foreground color*/ & 0x0F);
+    const int maxRows = 25, maxCols = 80;  // Assuming 80x25 screen resolution
+    unsigned char attributeByte = (0 /*background color*/ << 4) | (9 /*foreground color*/ & 0x0F);
     unsigned short attribute = attributeByte << 8;
+    unsigned short *location;
+    
 
-    // Handle a newline
-    if(c == '\n') {
+    if (c == '\n') {
+        // Handle newline
         cursorX = 0;
         cursorY++;
+    } else if (c == '\b') {
+        // Handle backspace
+        if (cursorX == 0) {
+            if (cursorY > 0) {
+                cursorY--;
+                cursorX = maxCols;  // Set cursor at the end of the previous line
+                do {
+                    cursorX--;  // Move back to the last non-space character
+                    location = video_memory + (cursorY * maxCols + cursorX);
+                } while (cursorX > 0 && (*location & 0xFF) == ' ');
+                if ((*location & 0xFF) != ' ' && cursorX < maxCols - 1) cursorX++;  // Adjust if not at start
+            }
+        } else {
+            cursorX--;
+        }
+        location = video_memory + (cursorY * maxCols + cursorX);
+        *location = ' ' | attribute;  // Clear the character at cursor
     } else {
-        unsigned short *location = video_memory + (cursorY * maxCols + cursorX);
+        // Handle normal characters
+        location = video_memory + (cursorY * maxCols + cursorX);
         *location = c | attribute;
         cursorX++;
     }
@@ -90,14 +110,14 @@ int putchar(char c)
         cursorY++;
     }
     if(cursorY >= maxRows) {
-        cursorY = 0; // Implement scrolling or reset cursorY based on your needs
+        cursorY = 0;  // Scroll the screen or reset cursorY based on your needs
     }
 
-    // Update cursor position
+    // Update cursor position on screen
     update_cursor(cursorY, cursorX);
-
     return c;
 }
+
 
 // bool print(const char* data, size_t length) {
 //     int count = 0;

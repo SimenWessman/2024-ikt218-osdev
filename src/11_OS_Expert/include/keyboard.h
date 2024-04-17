@@ -2,6 +2,7 @@
 #define KEYBOARD_H
 
 #include "libc/stdint.h"
+#include <libc/stdbool.h>
 
 extern char scancode_to_char[128];
 

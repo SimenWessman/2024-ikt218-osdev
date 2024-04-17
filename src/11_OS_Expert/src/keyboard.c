@@ -20,17 +20,87 @@ char scancode_to_char[128] =
     0,  /* Caps lock */
 };
 
-void keyboard_handler(void)
+char scancode_to_char_shift[128] =
 {
-    __asm__("cli");
+    0,   27,  '!', '@', '#', '$', '%', '^', '&', '*',  /* 1-9 */
+    '(', ')', '_', '+', '\b', /* Backspace */
+    '\t', /* Tab */
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', /* Enter key */
+    0,   /* 29   - Control */
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', /* ; : */
+    '"', '~', 0,   /* Left shift */
+    '|', 'Z', 'X', 'C', 'V', 'B', 'N', /* 49 */
+    'M', '<', '>', '?', 0,   /* Right shift */
+    '*',
+    0,   /* Alt */
+    ' ', /* Space bar */
+    0,   /* Caps lock */
+    // F1-F12, etc, you might want to handle these differently depending on your needs
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    // More mappings can be added here for other keys
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+bool shift_pressed = false;
+
+void keyboard_handler(void) 
+{
+    __asm__("cli");  // Disable interrupts
+
     uint8_t scancode = inb(0x60);
-    char ch = scancode < 128 ? scancode_to_char[scancode] : 0;
-    if (ch) {
-        putchar(ch);  // Print the character corresponding to the key pressed
+    bool key_released = scancode & 0x80;  // Check if the key was released
+
+    if (!key_released) 
+    {  // Only process key presses
+        if (scancode == 0x2A || scancode == 0x36) 
+        {
+            shift_pressed = true;  // Shift key pressed
+        } 
+        
+        else if (scancode == 0xAA || scancode == 0xB6) 
+        {
+            shift_pressed = false;  // Shift key released
+        } 
+        
+        else 
+        {
+            // Normal key processing
+            char ch;
+            if(shift_pressed) 
+            {
+                ch = scancode_to_char_shift[scancode];
+            } 
+            
+            else 
+            {
+                ch = scancode_to_char[scancode];
+            }
+        
+            if (ch) 
+            {
+                putchar(ch);  // Print the character corresponding to the key pressed
+            }
+        }
+    } 
+    
+    else 
+    {
+        // Here it is possible to add functionality for key release events
+        // For now, we do nothing with the release event
+        if (scancode == (0x2A + 0x80) || scancode == (0x36 + 0x80)) 
+        {
+            shift_pressed = false;  // Reset shift status on release
+        }
     }
-    outb(0x20, 0x20);  // Slend EOI to PIC
-    __asm__("sti");
+
+    outb(0x20, 0x20);  // Send EOI
+    __asm__("sti");  // Re-enable interrupts
 }
+
+
 
 void enable_keyboard_interrupt() 
 {
