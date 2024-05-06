@@ -68,6 +68,8 @@ add_executable(uiaos-kernel
 	src/idt.c
 	src/keyboard.c
 	src/pic.c
+	src/timer.c
+	src/mouse.c
 )
 
 # Include directories for the kernel target

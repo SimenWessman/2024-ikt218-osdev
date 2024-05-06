@@ -1,23 +1,83 @@
+// -----------------------------------------------------------------------------
+// File: 11_OS_Expert/src/stdio.c
+//
+// Authors: Group 11_OS_Expert (Thy Dang Vo & Simen Wessman Martinsen)
+// - @SimenWessman
+// - @ThyDV
+// 
+// Description: 
+// This file contains the implementation of standard input/output
+// functions for the operating system, such as putchar, printf, and
+// a simple implementation of puts. It also includes utility functions
+// like itoa (integer to ASCII conversion) and reverse (for string reversing),
+// crucial for number formatting and display.
+// -----------------------------------------------------------------------------
+
 #include <libc/stdio.h>
 #include <libc/string.h>
 #include <libc/stdarg.h>
 #include <libc/stdbool.h>
 
+#define MAX_LINES 25
+#define MAX_COLS 80
+
 volatile char *video = (volatile char*)0xB8000; // VGA text buffer.
+
+unsigned short screen_buffer[MAX_LINES][MAX_COLS];  // buffer to store lines of text
+int buffer_start = 0;  // index of the first line in the buffer
+int buffer_end = 0;    // index of the last line in the buffer
+
+// // Selection state variables
+// static bool selection_active = false;
+// static int selection_start_x = 0, selection_start_y = 0;
+// static int selection_end_x = 0, selection_end_y = 0;
+
+// void start_selection(int x, int y) 
+// {
+//     selection_active = true;
+//     selection_start_x = x;
+//     selection_start_y = y;
+//     selection_end_x = x;
+//     selection_end_y = y;
+// }
+
+// void update_selection(int x, int y) 
+// {
+//     if (selection_active) 
+//     {
+//         selection_end_x = x;
+//         selection_end_y = y;
+//     }
+// }
+
+// void handle_text_selection(int x, int y) 
+// {
+//     if (!selection_active) 
+//     {
+//         start_selection(x, y);
+//     } 
+    
+//     else 
+//     {
+//         update_selection(x, y);
+//     }
+// }
 
 void reverse(char s[]) 
 {
     int i, j;
     char c;
 
-    for (i = 0, j = strlen(s)-1; i < j; i++, j--) {
+    for (i = 0, j = strlen(s)-1; i < j; i++, j--) 
+    {
         c = s[i];
         s[i] = s[j];
         s[j] = c;
     }
 }
 
-void itoa(int value, char* str, int base) {
+void itoa(int value, char* str, int base) 
+{
     static char num[] = "0123456789ABCDEF"; // Support for hexadecimal
     char* wstr = str;
     int sign;
@@ -27,7 +87,8 @@ void itoa(int value, char* str, int base) {
     if ((sign = value) < 0 && base == 10) value = -value;
 
     // Conversion in reverse order
-    do {
+    do 
+    {
         *wstr++ = num[value % base];
     } while (value /= base);
 
@@ -70,54 +131,103 @@ int putchar(char c)
 {
     static unsigned short *video_memory = (unsigned short *)0xB8000;
     static int cursorX = 0, cursorY = 0;
-    const int maxRows = 25, maxCols = 80;  // Assuming 80x25 screen resolution
+    const int maxCols = 80;  // Typical width for a VGA text mode screen
     unsigned char attributeByte = (0 /*background color*/ << 4) | (9 /*foreground color*/ & 0x0F);
     unsigned short attribute = attributeByte << 8;
     unsigned short *location;
-    
 
-    if (c == '\n') {
-        // Handle newline
+    // if (selection_active && cursorX >= selection_start_x && cursorX <= selection_end_x &&
+    //     cursorY >= selection_start_y && cursorY <= selection_end_y) 
+    // {
+    //     // Adjust the attribute to highlight the background
+    //     attribute = (attribute & 0xFF00) | 0x70; // Example: Grey on black background
+    // }
+
+    // Newline character should move the cursor to the next line
+    if (c == '\n') 
+    {
         cursorX = 0;
         cursorY++;
-    } else if (c == '\b') {
-        // Handle backspace
-        if (cursorX == 0) {
-            if (cursorY > 0) {
+    } 
+    
+    // Backspace should move the cursor back one space 
+    // and clear the character at the cursor.
+    else if (c == '\b') 
+    {
+        if (cursorX == 0) 
+        {
+            if (cursorY > 0) 
+            {
                 cursorY--;
-                cursorX = maxCols;  // Set cursor at the end of the previous line
-                do {
-                    cursorX--;  // Move back to the last non-space character
-                    location = video_memory + (cursorY * maxCols + cursorX);
-                } while (cursorX > 0 && (*location & 0xFF) == ' ');
-                if ((*location & 0xFF) != ' ' && cursorX < maxCols - 1) cursorX++;  // Adjust if not at start
+                cursorX = maxCols;  // Set cursorX at the end to start checking for non-space characters
+                int hasContent = 0;  // Flag to check if the line has any content. Will save us time later.
+                for (int i = maxCols-1; i >= 0; i--) 
+                {
+                    location = video_memory + (cursorY * maxCols + i);
+                    if ((*location & 0xFF) != ' ') 
+                    {
+                        cursorX = i + 1;  // Place cursor right after the last non-space character
+                        hasContent = 1;
+                        break;
+                    }
+                }
+
+
+                if (!hasContent) 
+                {  // If no content is found, move cursor to the start of the line
+                    cursorX = 0;
+                }
             }
-        } else {
+        } 
+        
+        else 
+        {
             cursorX--;
         }
         location = video_memory + (cursorY * maxCols + cursorX);
         *location = ' ' | attribute;  // Clear the character at cursor
-    } else {
-        // Handle normal characters
+    } 
+    
+    // Any other character should be printed as usual
+    else 
+    {
         location = video_memory + (cursorY * maxCols + cursorX);
         *location = c | attribute;
         cursorX++;
     }
-
-    // Handle line wrap or scrolling if needed
-    if(cursorX >= maxCols) {
+    
+    // If cursor is at the end of the screen, move to the next line
+    if (cursorX >= maxCols) 
+    {
         cursorX = 0;
         cursorY++;
     }
-    if(cursorY >= maxRows) {
-        cursorY = 0;  // Scroll the screen or reset cursorY based on your needs
+
+    // If cursor is at bottom of screen, put cursor on top again.
+    // Very temporary solution, scrolling will be implemented soon.
+    if(cursorY >= MAX_LINES)
+    {
+        cursorY = 0;
     }
+
+
+    // Scrolling functionality, needs work.
+    // if (cursorY >= 25) {
+
+        
+    //     // Scroll the screen
+    //     for (int i = 0; i < 24; i++) 
+    //     {
+    //         memcpy(video_memory + (i * maxCols), video_memory + ((i + 1) * maxCols), maxCols * sizeof(unsigned short));
+    //     }
+    //     memset(video_memory + (24 * maxCols), 0, maxCols * sizeof(unsigned short));
+    //     cursorY = 24;  // Keep cursor on the last line of the screen
+    // }
 
     // Update cursor position on screen
     update_cursor(cursorY, cursorX);
     return c;
 }
-
 
 // bool print(const char* data, size_t length) {
 //     int count = 0;
@@ -137,16 +247,26 @@ int puts( const char *str)
     return 0;
 }
 
-int printf(const char* format, ...) {
+int printf(const char* format, ...) 
+{
     va_list args;
     va_start(args, format);
 
     int count = 0;
-    while (*format != '\0') {
-        if (*format == '%') {
+
+    // Loop through the format string
+    while (*format != '\0') 
+    {
+        // Check for format specifiers
+        if (*format == '%') 
+        {
             format++; // Skip '%'
-            switch (*format) {
-                case 'd': {
+            // Handle the different format specifiers.
+            switch (*format) 
+            {
+                // Integer format specifier.
+                case 'd': 
+                {
                     int num = va_arg(args, int);
                     char buffer[32];
                     itoa(num, buffer, 10); // Decimal
@@ -154,7 +274,11 @@ int printf(const char* format, ...) {
                     count += strlen(buffer);
                     break;
                 }
-                case 'X': {
+
+                // Hexadecimal format specifier.
+                // Useful for debugging and memory addresses.
+                case 'X':
+                {
                     int num = va_arg(args, int);
                     char buffer[32];
                     itoa(num, buffer, 16); // Hexadecimal
@@ -162,24 +286,35 @@ int printf(const char* format, ...) {
                     count += strlen(buffer);
                     break;
                 }
-                case 's': {
+
+                // String format specifier.
+                case 's': 
+                {
                     char* str = va_arg(args, char*);
                     puts(str);
                     count += strlen(str);
                     break;
                 }
-                case 'c': {
+
+                // Character format specifier.
+                case 'c': 
+                {
                     char c = (char)va_arg(args, int); // Char are promoted to int
                     putchar(c);
                     count++;
                     break;
                 }
+
+                // Undefined format specifier.
                 default:
                     putchar('%'); // In case of %% or unknown format specifier
                     putchar(*format);
                     count += 2;
             }
-        } else {
+        } 
+        
+        else 
+        {
             putchar(*format);
             count++;
         }
