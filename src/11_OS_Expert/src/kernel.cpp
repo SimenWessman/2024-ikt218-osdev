@@ -50,7 +50,7 @@ int kernel_main()
     unmask_irq1();
 
     // Unmask IRQ0 (timer interrupt) to enable timer functionality.
-     unmask_irq0();
+    unmask_irq0();
 
     // // Unmask IRQ12 (mouse interrupt) to enable mouse input.
     unmask_irq12();
