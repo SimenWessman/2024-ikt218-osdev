@@ -37,4 +37,6 @@ void unmask_irq1(void);
 void unmask_irq0(void);
 void unmask_irq12(void);
 
+void unmask_all_irqs(void);
+
 #endif // PIC_H

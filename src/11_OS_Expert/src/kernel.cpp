@@ -14,8 +14,6 @@
 // -----------------------------------------------------------------------------
 
 // TO DO: Add additional functionality for Interrupt Vector Table (IVT)
-// TO DO: Enhance keyboard support with more features
-// TO DO: Implement text writing functionality to the kernel
 // TO DO: Develop cursor movement functionality for text manipulation
 
 // Including essential C libraries and kernel modules.
@@ -29,6 +27,7 @@ extern "C"  // Ensures that the C++ compiler uses C linkage for the included C h
     #include "idt.h"          // Includes functions for setting up the IDT.
     #include "gdt.h"          // Includes functions for setting up the GDT.
     #include "pic.h"          // Includes functions for setting up the PIC.
+    #include "irqs.h"         // Includes functions for handling IRQs.
 
     int kernel_main(void);
 }
@@ -50,22 +49,36 @@ int kernel_main()
     unmask_irq1();
 
     // Unmask IRQ0 (timer interrupt) to enable timer functionality.
-    unmask_irq0();
+    //unmask_irq0();
 
     // // Unmask IRQ12 (mouse interrupt) to enable mouse input.
-    unmask_irq12();
+    //unmask_irq12();
 
     // Initialize the Interrupt Descriptor Table (IDT).
     // The IDT is essential for handling software and hardware interrupts,
     // mapping them to their respective handlers.
     init_idt();
 
+    // Initialize all IRQ handlers, except for the keyboard handler.
+    init_irq_handlers();
+
+    // Enable all interrupts except for the keyboard interrupt.
+    unmask_all_irqs();
+
     // Enable keyboard interrupts specifically, allowing the system
     // to respond to keyboard inputs.
+    // This is done separately because of the more advanced functionality
+    // essentially init_irq1() is called here.
+    // not really though :)
     enable_keyboard_interrupt();
 
     // Basic output to verify that the system is up and running.
     printf("Hello World!\n%d", 10);  // Print "Hello World!" and a formatted number.
+    
+    // Testing mouse interrupt
+    // I think QEMU doesnt pass mouse clicks.
+    // Simulating the mouse interrupt worked well.
+    asm("int $0x2C");
 
     // Infinite loop to keep the kernel running.
     // The 'hlt' instruction halts the CPU until the next interrupt is received,

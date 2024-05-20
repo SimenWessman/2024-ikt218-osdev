@@ -65,7 +65,9 @@ bool shift_pressed = false;  // State variable indicating whether shift key is a
 void keyboard_handler() 
 {
     __asm__("cli");  // Disable interrupts to handle the keyboard input atomically.
-
+    // This works, but its obnoxious. Writing functionality is already in place
+    // No reason to keep the interrupt print statement imo. Its one or the other.
+    //printf("Keyboard interrupt\n");
     uint8_t scancode = inb(0x60);  // Read scancode from keyboard data port.
     bool key_released = scancode & 0x80;  // Check if the key was released.
 

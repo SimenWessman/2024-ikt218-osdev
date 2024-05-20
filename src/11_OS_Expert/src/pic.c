@@ -54,6 +54,14 @@ void init_pic(void)
     outb(0xA1, 0xFF);  // Mask all on slave
 }
 
+// Function to enable the timer IRQ (IRQ0)
+void unmask_irq0() 
+{
+    uint8_t mask = inb(0x21);  // Read from the master PIC
+    mask &= ~(1 << 0);  // Clear the mask bit for IRQ0
+    outb(0x21, mask);  // Write back to the master PIC
+}
+
 // Function:
 // unmask_irq1
 //
@@ -74,11 +82,11 @@ void unmask_irq1()
     outb(0x21, mask);
 }
 
-// Function to enable the timer IRQ (IRQ0)
-void unmask_irq0() 
+// Function to enable IRQ2
+void unmask_irq2() 
 {
     uint8_t mask = inb(0x21);  // Read from the master PIC
-    mask &= ~(1 << 0);  // Clear the mask bit for IRQ0
+    mask &= ~(1 << 2);  // Clear the mask bit for IRQ2
     outb(0x21, mask);  // Write back to the master PIC
 }
 
@@ -88,4 +96,33 @@ void unmask_irq12()
     uint8_t mask = inb(0xA1);  // Read from the slave PIC
     mask &= ~(1 << 4);  // Clear the mask bit for IRQ12 (note: 4 because IRQ12 is 12 - 8 = 4 on the slave)
     outb(0xA1, mask);  // Write back to the slave PIC
+}
+
+// Utility function to unmask an IRQ line
+void unmask_irq(uint8_t IRQ_line) 
+{
+    uint16_t port;
+    uint8_t value;
+
+    if (IRQ_line < 8) {
+        port = 0x21;  // Master PIC
+    } else {
+        port = 0xA1;  // Slave PIC
+        IRQ_line -= 8;
+    }
+
+    value = inb(port) & ~(1 << IRQ_line);
+    outb(port, value);
+}
+
+// Utility function to unmask all IRQs except IRQ1 (keyboard)
+void unmask_all_irqs() 
+{
+    for (uint8_t i = 0; i < 16; i++) 
+    {
+        if (i != 1) // Skip IRQ1 (keyboard)
+        {  
+            unmask_irq(i);
+        }
+    }
 }

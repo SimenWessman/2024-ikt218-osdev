@@ -21,9 +21,22 @@
 // External declaration of the keyboard, timer and mouse interrupt handlers.
 // This function is implemented elsewhere, typically in an assembly file or
 // a C file where keyboard interrupt logic is handled.
-extern void keyboard_handler(void);
-extern void timer_handler(void);
-extern void mouse_handler(void);
+extern void keyboard_handler(void); // irq1
+extern void timer_handler(void); // irq0
+extern void mouse_handler(void); // irq12
+extern void irq2(void);
+extern void irq3(void);
+extern void irq4(void);
+extern void irq5(void);
+extern void irq6(void);
+extern void irq7(void);
+extern void irq8(void);
+extern void irq9(void);
+extern void irq10(void);
+extern void irq11(void);
+extern void irq13(void);
+extern void irq14(void);
+extern void irq15(void);
 
 // Structure defining a single entry in the Interrupt Descriptor Table.
 struct idt_entry

@@ -30,6 +30,7 @@ void timer_handler(void)
 {
     static uint32_t tick = 0;
     tick++;
+    printf("Timer interrupt\n");
     // if(tick % 18 == 0) 
     // {
     //     printf("One second has passed!\n");
