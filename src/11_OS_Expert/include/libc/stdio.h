@@ -28,6 +28,10 @@ void outb(unsigned short port, unsigned char val);
 //   @returns The byte of data received from the hardware port.
 unsigned char inb(unsigned short port);
 
+// Scrolling utility functions for kernel:
+void handle_scroll_up();
+void handle_scroll_down();
+
 // Outputs a single character to the standard output device, typically the console.
 //
 //   @param c: The character to be printed.

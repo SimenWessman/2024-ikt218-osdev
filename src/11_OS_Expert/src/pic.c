@@ -120,9 +120,14 @@ void unmask_all_irqs()
 {
     for (uint8_t i = 0; i < 16; i++) 
     {
-        if (i != 1) // Skip IRQ1 (keyboard)
+        if (i != 1 && i != 0 && i != 12 && i != 2) // Skip IRQ1 (keyboard)
         {  
             unmask_irq(i);
         }
     }
+
+    unmask_irq0();  // Unmask IRQ0 (timer)
+    unmask_irq1();  // Unmask IRQ1 (keyboard)
+    unmask_irq2();  // Unmask IRQ2 (cascading)
+    unmask_irq12(); // Unmask IRQ12 (mouse)
 }

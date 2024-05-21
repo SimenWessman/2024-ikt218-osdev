@@ -23,8 +23,8 @@ void irq15_handler(void);
 // Array of function pointers for the IRQ handlers
 void (*irq_handlers[15]) (void) = 
 {
-    irq0_handler,
-    // irq1_handler, // Handled separately
+    //irq0_handler,     Handled separately
+    // irq1_handler,    Handled separately
     irq2_handler,
     irq3_handler,
     irq4_handler,
@@ -42,18 +42,6 @@ void (*irq_handlers[15]) (void) =
 };
 
 // Function definitions for each IRQ handler
-void irq0_handler(void) 
-{
-    static uint32_t tick = 0;
-    tick++;
-    if(tick % 17 == 0)
-    {
-        printf("One second has passed!\n");
-    }
-    //printf("Timer interrupt\n");
-    outb(0x20, 0x20); // EOI
-    __asm__("sti");
-}
 
 // Define additional handlers as necessary...
 void irq2_handler(void) 
@@ -168,7 +156,8 @@ void init_irq_handlers(void)
     for (int i = 0; i < 15; i++) 
     {
         // Skip IRQ1 which is handled separately
-        if (i == 1) continue;
+        if (i == 0 || i == 1) continue;
+
 
         idt_set_gate(32 + i, (uint32_t)irq_handlers[i], 0x08, 0x8E);
     }

@@ -71,6 +71,10 @@ add_executable(uiaos-kernel
 	src/timer.c
 	src/mouse.c
 	src/irqs.c
+	src/memory.c
+	src/malloc.c
+	src/pit.c
+	#src/memutils.c
 )
 
 # Include directories for the kernel target

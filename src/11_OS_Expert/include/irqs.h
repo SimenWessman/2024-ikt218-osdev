@@ -3,5 +3,4 @@
 
 // Initialize all IRQ handlers
 void init_irq_handlers(void);
-
 #endif // IRQS_H

@@ -67,25 +67,35 @@ char* strcat(char* dest, const char* src)
     return original_dest;
 }
 
-// Fills the first num bytes of the memory area pointed to by ptr with the byte value.
-void *memset(void *ptr, int value, size_t num) 
+// Function to set a block of memory with a byte value
+void* memset (void * ptr, int value, size_t num)
 {
-    unsigned char *p = ptr;
-    while (num--) 
-    {
-        *p++ = (unsigned char)value;  // Set each byte in the block to the value.
-    }
-    return ptr;
+    unsigned char* p=ptr;     // Cast the pointer to unsigned char*
+    while(num--)
+        *p++ = (unsigned char)value;   // Set each byte to the given value
+    return ptr;               // Return the pointer to the block of memory
 }
 
 // Copies num bytes from memory area src to memory area dest.
-void *memcpy(void *dest, const void *src, size_t num) 
+void* memcpy(void* dest, const void* src, size_t count )
 {
-    unsigned char *d = dest;
-    const unsigned char *s = src;
-    while (num--) 
-    {
-        *d++ = *s++;  // Copy each byte from source to destination.
+    char* dst8 = (char*)dest;  // Cast the destination pointer to char*
+    char* src8 = (char*)src;   // Cast the source pointer to char*
+
+    if (count & 1) {           // If the count is odd
+        dst8[0] = src8[0];     // Copy one byte from source to destination
+        dst8 += 1;             // Increment destination pointer by one byte
+        src8 += 1;             // Increment source pointer by one byte
     }
-    return dest;
+
+    count /= 2;                // Divide the count by two to copy 2 bytes at a time
+    while (count--) {          // Loop through each pair of 2 bytes
+        dst8[0] = src8[0];     // Copy the first byte of the pair from source to destination
+        dst8[1] = src8[1];     // Copy the second byte of the pair from source to destination
+
+        dst8 += 2;             // Increment destination pointer by 2 bytes
+        src8 += 2;             // Increment source pointer by 2 bytes
+    }
+
+    return (void*)dest;        // Return the destination pointer
 }

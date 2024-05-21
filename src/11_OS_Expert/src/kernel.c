@@ -14,8 +14,10 @@ struct multiboot_info {
 
 int kernel_main();
 
-int main(uint32_t magic, struct multiboot_info* mb_info_addr) {
+int main(uint32_t magic, struct multiboot_info* mb_info_addr) 
+{
 
     // Call cpp kernel_main (defined in kernel.cpp)
+    
     return kernel_main();
 }
