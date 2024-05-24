@@ -31,6 +31,8 @@ extern "C"  // Ensures that the C++ compiler uses C linkage for the included C h
     #include "gdt.h"          // Includes functions for setting up the GDT.
     #include "pic.h"          // Includes functions for setting up the PIC.
     #include "irqs.h"         // Includes functions for handling IRQs.
+    #include "song/song.h"    // Includes functions for playing songs.
+
     int kernel_main(void);
 
     extern uint32_t end; // This is defined in arch/i386/linker.ld
@@ -130,19 +132,32 @@ int kernel_main()
     int counter = 0;
 
     //printf("Tick: %d\n", get_tick_count());
-        
-    while(true)
-    {
-        printf("[%d]: Sleeping with busy-waiting (HIGH CPU).\n", counter);
-        sleep_busy(1000);
-        printf("[%d]: Slept using busy-waiting.\n", counter++);
-
-        printf("[%d]: Sleeping with interrupts (LOW CPU).\n", counter);
-        sleep_interrupt(1000);
-        printf("[%d]: Slept using interrupts.\n", counter++);
-    }
 
     //printf("Tick: %d\n", get_tick_count());
+
+    Song* songs[] = {
+	new Song({music_1, sizeof(music_1) / sizeof(Note)}),
+    new Song({music_2, sizeof(music_2) / sizeof(Note)}),
+    new Song({music_3, sizeof(music_3) / sizeof(Note)}),
+    new Song({music_4, sizeof(music_4) / sizeof(Note)}),
+    new Song({norsk_dans_nr2, sizeof(norsk_dans_nr2) / sizeof(Note)})
+    };
+
+    uint32_t n_songs = sizeof(songs) / sizeof(Song*);
+
+    SongPlayer* player = create_song_player();
+
+    player->play_song(songs[4]);
+
+    // while(true)
+    // {
+    //     for(uint32_t i =0; i < n_songs; i++)
+    //     {
+    //         printf("Playing Song...\n");
+    //         player->play_song(songs[i]);
+    //         printf("Finished playing the song.\n");
+    //     }
+    // }
 
     // Infinite loop to keep the kernel running.
     // The 'hlt' instruction halts the CPU until the next interrupt is received,
