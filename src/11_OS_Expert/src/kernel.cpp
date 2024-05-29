@@ -139,25 +139,22 @@ int kernel_main()
 	new Song({music_1, sizeof(music_1) / sizeof(Note)}),
     new Song({music_2, sizeof(music_2) / sizeof(Note)}),
     new Song({music_3, sizeof(music_3) / sizeof(Note)}),
-    new Song({music_4, sizeof(music_4) / sizeof(Note)}),
-    new Song({norsk_dans_nr2, sizeof(norsk_dans_nr2) / sizeof(Note)})
+    new Song({music_4, sizeof(music_4) / sizeof(Note)})
     };
 
     uint32_t n_songs = sizeof(songs) / sizeof(Song*);
 
     SongPlayer* player = create_song_player();
 
-    player->play_song(songs[4]);
-
-    // while(true)
-    // {
-    //     for(uint32_t i =0; i < n_songs; i++)
-    //     {
-    //         printf("Playing Song...\n");
-    //         player->play_song(songs[i]);
-    //         printf("Finished playing the song.\n");
-    //     }
-    // }
+    while(true)
+    {
+        for(uint32_t i =0; i < n_songs; i++)
+        {
+            printf("Playing Song...\n");
+            player->play_song(songs[i]);
+            printf("Finished playing the song.\n");
+        }
+    }
 
     // Infinite loop to keep the kernel running.
     // The 'hlt' instruction halts the CPU until the next interrupt is received,
